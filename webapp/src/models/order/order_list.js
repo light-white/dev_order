@@ -1,4 +1,4 @@
-import { fetchOrderList, payOrder } from '../../services/order/order';
+import { searchOrderList, fetchOrderList, payOrder } from '../../services/order/order';
 import { message } from 'antd';
 
 export default {
@@ -14,7 +14,22 @@ export default {
     },
   },
   effects: {
-    * fetch({ payload }, { call, put }) {
+    *search({ payload }, { call, put }) {
+      yield put({ type: 'switchLoading' });
+      const response = yield call(searchOrderList, payload);
+      yield put({
+        type: 'memberOrderList',
+        payload: {
+          data: response.data,
+          total: response.total,
+          current: payload.current,
+          pageSize: payload.pageSize,
+          member_id: response.member_id,
+        },
+      });
+      yield put({ type: 'switchLoading' });
+    },
+    *fetch({ payload }, { call, put }) {
       yield put({ type: 'switchLoading' });
       const response = yield call(fetchOrderList, payload);
       yield put({
@@ -26,10 +41,10 @@ export default {
           pageSize: payload.pageSize,
           member_id: response.member_id,
         },
-      })
+      });
       yield put({ type: 'switchLoading' });
     },
-    * pay_order({ payload }, { call, put }) {
+    *pay_order({ payload }, { call, put }) {
       yield put({ type: 'switchLoading' });
       const response = yield call(payOrder, payload);
       if (response.result === true) {
@@ -42,7 +57,7 @@ export default {
   },
   reducers: {
     memberOrderList(state, { payload }) {
-      const pager = { ...state.pagination }
+      const pager = { ...state.pagination };
       pager.total = payload.total;
       pager.current = payload.current;
       pager.pageSize = payload.pageSize;
@@ -55,4 +70,3 @@ export default {
     },
   },
 };
-
