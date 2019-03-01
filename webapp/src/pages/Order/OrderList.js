@@ -51,11 +51,10 @@ export default class OrderList extends PureComponent {
       payload: {
         ...this.generateParam(),
         ...payload,
-        current: this.props.pagination.current,
-        pageSize: this.props.pagination.pageSize,
       },
     });
     this.props.form.resetFields();
+    this.refresh();
   }
 
   generateParam() {
