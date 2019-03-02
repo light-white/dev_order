@@ -57,6 +57,7 @@ export default {
       return {
         ...state,
         member_id: payload.member_id,
+        list: [],
       };
     },
     memberOrderList(state, { payload }) {

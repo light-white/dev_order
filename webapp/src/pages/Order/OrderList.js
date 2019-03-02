@@ -45,8 +45,8 @@ export default class OrderList extends PureComponent {
     });
   };
 
-  searchOrder(payload) {
-    this.props.dispatch({
+  async searchOrder(payload) {
+    await this.props.dispatch({
       type: 'OrderList/search',
       payload: {
         ...this.generateParam(),
@@ -88,7 +88,7 @@ export default class OrderList extends PureComponent {
     this.props.dispatch({
       type: 'OrderList/pay_order',
       payload: {
-        business_no: record.business_no,
+        trade_no: record.trade_no,
       },
     });
     this.refresh();
@@ -146,31 +146,38 @@ export default class OrderList extends PureComponent {
   renderOrderList() {
     const { list, loading, pagination, confirmLoading } = this.props;
     const OrderStatusMap = {
-      1: '已支付',
-      2: '待支付',
+      1: '已创建',
+      20: '待支付',
+      40: '已支付',
+      60: '已完成',
+      70: '退款',
+      80: '退款',
+      89: '自动关闭',
+      99: '超时取消',
+      109: '已删除',
     };
     const columns = [
       {
         title: '订单号码',
-        dataIndex: 'business_no',
+        dataIndex: 'trade_no',
       },
       {
         title: '订单时间',
-        dataIndex: 'order_time',
+        dataIndex: 'create_time',
       },
       {
         title: '订单状态',
-        dataIndex: 'order_status',
+        dataIndex: 'status',
         render: (text, record) => OrderStatusMap[text],
       },
       {
         title: '操作',
         render: (text, record, index) =>
-          list[index].order_status === 2 ? (
+          list[index].status === 20 ? (
             <a onClick={e => this.pay_order(e, record)}>支付</a>
           ) : (
-            ''
-          ),
+              ''
+            ),
       },
     ];
     return list ? (
@@ -181,12 +188,12 @@ export default class OrderList extends PureComponent {
           pagination={pagination}
           onChange={this.handleTableChange}
           loading={loading}
-          rowKey="business_no"
+          rowKey="trade_no"
         />
       </Card>
     ) : (
-      ''
-    );
+        ''
+      );
   }
 
   render() {

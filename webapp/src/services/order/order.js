@@ -6,7 +6,7 @@ export async function fetchOrderList(params) {
 }
 
 export async function payOrder(params) {
-  return request(`/api/order/${params.business_no}/pay`, {
+  return request(`/api/order/${params.trade_no}/pay`, {
     method: 'PUT',
   });
 }
