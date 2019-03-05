@@ -24,7 +24,6 @@ export default class MemberSearch extends PureComponent {
   }
 
   initData(payload) {
-    console.log(this.props.currentUser)
     this.props.dispatch({
       type: 'Member/init',
       payload: {
@@ -117,11 +116,11 @@ export default class MemberSearch extends PureComponent {
         (<Card title="用户信息" style={{marginBottom: 24}} bordered={false}>
           <DescriptionList style={{marginBottom: 24}}>
             <Description
-              term="用户姓名:">{member.fullname}</Description>
-            <Description term="member_id:">{member.member_id}</Description>
-            <Description term="url_token:">{member.url_token}</Description>
-            <Description term="手机号码:">{member.phone_no}</Description>
-            <Description term="email:">{member.email}</Description>
+              term="用户姓名">{member.fullname}</Description>
+            <Description term="member_id">{member.member_id}</Description>
+            <Description term="url_token">{member.url_token}</Description>
+            <Description term="手机号码">{member.phone_no}</Description>
+            <Description term="email">{member.email}</Description>
           </DescriptionList></Card>) :
         ''
     )

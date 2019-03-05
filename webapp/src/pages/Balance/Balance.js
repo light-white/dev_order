@@ -19,41 +19,15 @@ const TabPane = Tabs.TabPane;
   currentUser: state.global.currentUser,
 }))
 export default class BalanceItem extends PureComponent {
-  componentDidMount() {
-    this.initData()
-  }
 
-  initData() {
-    this.props.dispatch({
-      type: 'Balance/fetch',
-      payload: {
-        current: 1,
-        pageSize: 10,
-      }
-    })
-  }
-
-  handleTableChange = async (pagination, filters, sorter) => {
-    const params = {
-      ...this.generateParam(),
-      id: this.props.match.params.id,
-      current: pagination.current,
-      pageSize: pagination.pageSize,
-    };
+  async searchBalance(payload) {
     await this.props.dispatch({
-      type: 'Balance/fetch',
-      payload: params,
-    });
-  };
-
-  searchOrder(payload) {
-    this.props.dispatch({
       type: 'Balance/fetch',
       payload: {
         ...this.generateParam(),
         ...payload,
-      }
-    })
+      },
+    });
     this.props.form.resetFields();
   }
 
@@ -80,8 +54,39 @@ export default class BalanceItem extends PureComponent {
 
   handleSearch = e => {
     e.preventDefault()
-    this.searchOrder()
+    this.searchBalance()
   }
+
+  handleCancel = () => {
+    this.props.dispatch({ type: 'Balance/hideModal' });
+  };
+
+  handleOk = async () => {
+    const { validateFieldsAndScroll } = this.props.form;
+    return validateFieldsAndScroll(async (error, values) => {
+      if (!error) {
+        await this.props.dispatch({
+          type: 'Balance/recharge',
+          payload: {
+            type: parseInt(values.type.key),
+            id: parseInt(values.price_member_id),
+            price: parseFloat(values.price),
+          },
+        })
+        this.handleCancel()
+      }
+    });
+  };
+
+  showModal = async () => {
+    // 初始化form
+    this.props.form.setFieldsValue({
+      type: { key: '' },
+      member_id: '',
+      price: '',
+    });
+    this.props.dispatch({ type: 'Balance/showModal' })
+  };
 
   renderSearchForm() {
     const { getFieldDecorator } = this.props.form;
@@ -122,34 +127,22 @@ export default class BalanceItem extends PureComponent {
     )
   }
 
-  renderMemberItem() {
-    const { member } = this.props
-    return (
-      member ?
-        (<Card title="用户信息" style={{ marginBottom: 24 }} bordered={false}>
-          <DescriptionList style={{ marginBottom: 24 }}>
-            <Description
-              term="用户姓名:">{member.fullname}</Description>
-            <Description term="member_id:">{member.member_id}</Description>
-            <Description term="url_token:">{member.url_token}</Description>
-            <Description term="手机号码:">{member.phone_no}</Description>
-            <Description term="email:">{member.email}</Description>
-          </DescriptionList></Card>) :
-        ''
-    )
-  }
-
   renderBalanceItem() {
+    const { balanceItem } = this.props
     return (
       <Card title="余额信息" style={{ marginBottom: 24 }} bordered={false}>
-        <DescriptionList style={{ marginBottom: 24 }}>
-          <Description term="用户姓名:">{'祝由火'}</Description>
-          <Description term="member_id:">{111}</Description>
-        </DescriptionList>
-        <DescriptionList style={{ marginBottom: 24 }}>
-          <Description term="余额:">{'0.00'}</Description>
-          <Description term="知乎币:">{'12.00'}</Description>
-        </DescriptionList>
+        {balanceItem ? (
+          <DescriptionList style={{ margin: 24 }}>
+            <DescriptionList style={{ marginBottom: 24 }}>
+              <Description term="用户姓名">{balanceItem.name}</Description>
+              <Description term="member_id">{balanceItem.member_id}</Description>
+            </DescriptionList>
+            <DescriptionList style={{ marginBottom: 24 }}>
+              <Description term="余额">{balanceItem.balance}</Description>
+              <Description term="知乎币">{balanceItem.icon}</Description>
+            </DescriptionList>
+          </DescriptionList>
+        ) : ''}
       </Card>
     )
   }
@@ -172,7 +165,7 @@ export default class BalanceItem extends PureComponent {
     )
   }
 
-  render() {
+  renderBalanceModel() {
     const formItemLayout = {
       labelCol: {
         xs: { span: 24 },
@@ -185,46 +178,53 @@ export default class BalanceItem extends PureComponent {
       },
     };
     const { getFieldDecorator } = this.props.form;
+    const { modalVisible } = this.props
+    return (
+      <Modal
+        title={'充值'}
+        visible={modalVisible}
+        onOk={this.handleOk}
+        onCancel={this.handleCancel}
+      >
+        <Form>
+          <FormItem {...formItemLayout} label="充值类型">
+            {getFieldDecorator('type', {
+              rules: [
+                {
+                  required: true,
+                  message: '请选择充值类型',
+                  transform: ({ key }) => key,
+                },
+              ],
+            })(
+              <Select labelInValue placeholder='请选择充值类型'>
+                <Option key="1">余额</Option>
+                <Option key="2">知乎币</Option>
+              </Select>
+            )}
+          </FormItem>
+          <FormItem {...formItemLayout} label="member id">
+            {getFieldDecorator('price_member_id', {
+              rules: [{ required: true, message: '填写 member_id' }],
+            })(<Input placeholder="请输入 member_id" />)}
+          </FormItem>
+          <FormItem {...formItemLayout} label="充值金额">
+            {getFieldDecorator("price", {
+              rules: [{ required: true, message: '填写充值金额' }]
+            })(<Input placeholder="请输入充值金额" />)}
+          </FormItem>
+        </Form>
+      </Modal>
+    )
+  }
+
+  render() {
     return (
       <PageHeaderLayout>
         {this.renderSearchForm()}
         {this.renderBalanceItem()}
         {this.renderFooterToolbar()}
-        <Modal
-          title={'充值'}
-          visible={true}
-          onOk={this.handleOk}
-          onCancel={this.handleCancel}
-        >
-          <Form>
-            <FormItem {...formItemLayout} label="充值类型">
-              {getFieldDecorator('type', {
-                rules: [
-                  {
-                    required: true,
-                    message: '请选择充值类型',
-                    transform: ({ key }) => key,
-                  },
-                ],
-              })(
-                <Select labelInValue placeholder='请选择充值类型'>
-                  <Option key="1">余额</Option>
-                  <Option key="2">知乎币</Option>
-                </Select>
-              )}
-            </FormItem>
-            <FormItem {...formItemLayout} label="member id">
-              {getFieldDecorator('member_id', {
-                rules: [{ required: true, message: '填写 member_id' }],
-              })(<Input placeholder="请输入 member_id" />)}
-            </FormItem>
-            <FormItem {...formItemLayout} label="充值金额">
-              {getFieldDecorator("price", {
-                rules: [{ required: true, message: '填写充值金额' }]
-              })(<Input placeholder="请输入充值金额" />)}
-            </FormItem>
-          </Form>
-        </Modal>
+        {this.renderBalanceModel()}
       </PageHeaderLayout>
     )
   }
