@@ -27,7 +27,7 @@ export default {
     *recharge({ payload }, { call, put }) {
       yield put({ type: 'switchLoading' });
       const response = yield call(rechargeBalance, payload);
-      if (response.result === true) {
+      if (response.result === 'success') {
         message.success('支付成功');
       } else {
         message.warning('支付失败');

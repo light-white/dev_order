@@ -82,7 +82,7 @@ export default class BalanceItem extends PureComponent {
     // 初始化form
     this.props.form.setFieldsValue({
       type: { key: '' },
-      member_id: '',
+      price_member_id: '',
       price: '',
     });
     this.props.dispatch({ type: 'Balance/showModal' })
