@@ -18,8 +18,8 @@ export default {
         payload: {
           fullname: response.fullname,
           member_id: response.member_id,
-          balance: 0,
-          icon: 12,
+          balance: response.balance,
+          icon: response.icon,
         },
       })
       yield put({ type: 'switchLoading' });

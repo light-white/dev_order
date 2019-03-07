@@ -44,7 +44,7 @@ export default {
     *pay_order({ payload }, { call, put }) {
       yield put({ type: 'switchLoading' });
       const response = yield call(payOrder, payload);
-      if (response.result === true) {
+      if (response.result === 'success') {
         message.success('支付成功');
       } else {
         message.warning('支付失败');
